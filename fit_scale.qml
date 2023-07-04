@@ -161,6 +161,8 @@ MuseScore
 			{
 				id: tonalBox
 				model: toneNames
+				currentIndex: tonalCenter
+				onCurrentIndexChanged: tonalCenter = currentIndex
 			}
 
 			Binding
@@ -174,6 +176,8 @@ MuseScore
 			{
 				id: modalBox
 				model: modeNames
+				currentIndex: mode
+				onCurrentIndexChanged: mode = currentIndex
 			}
 
 			Binding
