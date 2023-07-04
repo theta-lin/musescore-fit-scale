@@ -1,9 +1,10 @@
 // Based on Musescore Colornotes Hooktheory Plugin
 
 import QtQuick 2.6
-import QtQuick.Controls 2.2
+import QtQuick.Controls 1.4
 import MuseScore 3.0
 import QtQuick.Window 2.2
+import QtQuick.Layouts 1.1
 
 
 MuseScore
@@ -12,14 +13,14 @@ MuseScore
 	menuPath: "Plugins.Fit Scale"
 	pluginType: "dock"
 
-	readonly property string black: "#000000"
-	readonly property string red: "#ff0000"
+	readonly property var toneNames: ["C", "C#/Db", "D", "D#/Eb", "E", "F", "F#/Gb", "G", "G#/Ab", "A", "A#/Bb", "B"]
+	readonly property var modeNames: ["Major/Ionian", "Dorian", "Phrygian", "Lydian", "Mixolydian", "Minor/Aeolian", "Locrian"]
 	readonly property var ionian: [2, 2, 1, 2, 2, 2, 1]
 
 	property var tonalCenter: tonalBox.currentIndex
 	property var mode: modalBox.currentIndex
 
-	function applyToSelectedNotes(func, restore)
+	function applyToSelectedNotes(func)
 	{
 		if (!curScore) return;
 
@@ -30,12 +31,12 @@ MuseScore
 			curScore.startCmd();
 		}
 
-		for (var i in curScore.selection.elements)
+		var elements = curScore.selection.elements;
+		for (var i in elements)
 		{
-			var note = curScore.selection.elements[i];
-			if (note.pitch)
+			if (elements[i].type==Element.NOTE)
 			{
-				func(note, restore);
+				func(elements[i]);
 			}
 		}
 
@@ -46,6 +47,23 @@ MuseScore
 		}
 	}
 
+	function isDiatonic(note, tc, m)
+	{
+		for (var i = 0, pitch = tc; i < 7; ++i)
+		{
+			if (note.pitch % 12 == pitch)
+			{
+				return true;
+			}
+			pitch = (pitch + ionian[(m + i) % 7]) % 12;
+		}
+
+		return false;
+	}
+
+	readonly property string black: "#000000"
+	readonly property string red: "#ff0000"
+
 	function colorNote(note, restore)
 	{
 		if (restore)
@@ -54,18 +72,7 @@ MuseScore
 		}
 		else
 		{
-			var diatonic = false;
-			for (var i = 0, pitch = tonalCenter; i < 7; ++i)
-			{
-				if (note.pitch % 12 == pitch)
-				{
-					diatonic = true;
-					break;
-				}
-				pitch = (pitch + ionian[(mode + i) % 7]) % 12;
-			}
-
-			if (diatonic)
+			if (isDiatonic(note, tonalCenter, mode))
 			{
 				note.color = black;
 			}
@@ -76,46 +83,149 @@ MuseScore
 		}
 	}
 
-	Grid
+	property var diatonicDuration
+	property var tonicDuration
+	property var totalDuration
+
+	function fitCount(note, tc, m)
 	{
-		columns: 2
+		var chord = note.parent;
+		var t = chord.duration.numerator / chord.duration.denominator;
+		if (isDiatonic(note, tc, m)) ++diatonicDuration;
+		if (note.pitch % 12 == tc) ++tonicDuration;
+		++totalDuration;
+	}
+
+	function fitScale()
+	{
+		var results = [];
+
+		for (var tc = 0; tc < 12; ++tc)
+		{
+			for (var m = 0; m < 7; ++m)
+			{
+				diatonicDuration = 0;
+				tonicDuration = 0;
+				totalDuration = 0;
+				applyToSelectedNotes((note) => {fitCount(note, tc, m)});
+
+				var x = {
+					tonalCenter: tc,
+					mode: m,
+					tcName: toneNames[tc],
+					mName: modeNames[m],
+					diatonic: diatonicDuration / totalDuration,
+					tonic: tonicDuration / totalDuration
+				};
+				results.push(x);
+			}
+		}
+
+		results.sort((x, y) => {
+			var dDiff = y.diatonic - x.diatonic;
+			var eps = 0.001;
+			if (Math.abs(dDiff) < eps) return y.tonic - x.tonic;
+			return dDiff;
+		})
+
+		resultsModel.clear();
+		for (x of results)
+		{
+			resultsModel.append(x);
+		}
+	}
+
+	Column
+	{
 		padding: 12
 		spacing: 12
 
-		Label
+		Grid
 		{
-			font.pointSize: 12
-			text: "Tonal Center"
-		}
+			columns: 2
+			spacing: 12
 
-		ComboBox
-		{
-			id: tonalBox
-			model: ["C", "C#/Db", "D", "D#/Eb", "E", "F", "F#/Gb", "G", "G#/Ab", "A", "A#/Bb", "B"]
-		}
+			Label
+			{
+				font.pointSize: 12
+				text: "Tonal Center"
+			}
 
-		Label
-		{
-			font.pointSize: 12
-			text: "Modus"
-		}
+			Label
+			{
+				font.pointSize: 12
+				text: "Modus"
+			}
 
-		ComboBox
-		{
-			id: modalBox
-			model: ["Ionian", "Dorian", "Phrygian", "Lydian", "Mixolydian", "Aeolian", "Locrian"]
+			ComboBox
+			{
+				id: tonalBox
+				model: toneNames
+			}
+
+			Binding
+			{
+				target: tonalBox
+				property: "currentIndex"
+				value: tonalCenter
+			}
+
+			ComboBox
+			{
+				id: modalBox
+				model: modeNames
+			}
+
+			Binding
+			{
+				target: modalBox
+				property: "currentIndex"
+				value: mode
+			}
 		}
 
 		Button
 		{
 			text: "Highlight Chromatic Notes"
-			onClicked: applyToSelectedNotes(colorNote, false)
+			onClicked: applyToSelectedNotes((note) => { colorNote(note, false); })
 		}
 
 		Button
 		{
 			text: "Remove Highlight"
-			onClicked: applyToSelectedNotes(colorNote, true)
+			onClicked: applyToSelectedNotes((note) => { colorNote(note, true); })
+		}
+
+		Button
+		{
+			text: "Find Best Fitting Scales"
+			onClicked: fitScale()
+		}
+
+		ListModel
+		{
+			id: resultsModel
+		}
+
+		TableView
+		{
+			width: 300
+			height: 450
+			model: resultsModel
+
+			onCurrentRowChanged: {
+				if (currentRow >= 0)
+				{
+					var row = model.get(currentRow);
+					tonalCenter = row.tonalCenter;
+					mode = row.mode;
+				}
+			}
+
+			TableViewColumn{ role: "tcName"; title: "Tonic"; width: 50 }
+			TableViewColumn{ role: "mName"; title: "Mode"; width: 100 }
+			TableViewColumn{ role: "diatonic"; title: "Diatonic"; width: 75 }
+			TableViewColumn{ role: "tonic"; title: "Tonic"; width: 75 }
 		}
 	}
 }
