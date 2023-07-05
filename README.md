@@ -4,6 +4,8 @@ This plugin finds the closest diatonic scale to the selected notes (or the entir
 
 Supported version: 3.x
 
+![Screenshot](screenshot.png)
+
 ## Installation
 
 https://musescore.org/en/handbook/3/plugins#installation
