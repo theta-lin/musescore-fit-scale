@@ -131,8 +131,8 @@ MuseScore
 					mode: m,
 					tcName: toneNames[tc],
 					mName: modeNames[m],
-					diatonic: diatonicDuration / totalDuration,
-					tonic: tonicDuration / totalDuration
+					diatonic: (diatonicDuration / totalDuration * 100) + "%",
+					tonic: (tonicDuration / totalDuration * 100) + "%"
 				};
 				results.push(x);
 			}
@@ -245,8 +245,8 @@ MuseScore
 
 			TableViewColumn{ role: "tcName"; title: "Tonic"; width: 50 }
 			TableViewColumn{ role: "mName"; title: "Mode"; width: 100 }
-			TableViewColumn{ role: "diatonic"; title: "Diatonic"; width: 75 }
-			TableViewColumn{ role: "tonic"; title: "Tonic"; width: 75 }
+			TableViewColumn{ role: "diatonic"; title: "Diatonic%"; width: 75 }
+			TableViewColumn{ role: "tonic"; title: "Tonic%"; width: 75 }
 		}
 	}
 }
