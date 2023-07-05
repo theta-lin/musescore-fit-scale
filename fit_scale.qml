@@ -1,4 +1,22 @@
-// Based on Musescore Colornotes Hooktheory Plugin
+/*
+ * Copyright 2023 theta-lin
+ *
+ * This program is free software: you can redistribute it and/or modify it
+ * under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see https://www.gnu.org/licenses/agpl-3.0.en.html.
+ *
+ * This project includes code derived from or incorporating the
+ * "Musescore Colornotes Hooktheory Plugin"
+ * (licensed under the GNU Affero General Public License version 3).
+ *
+ * Project: Musescore Colornotes Hooktheory Plugin
+ * Author: sammik
+ * URL: https://github.com/sammik/musescore-plugin-colornotes-hooktheory/blob/main/colornotes_hook_name.qml
+ */
 
 import QtQuick 2.6
 import QtQuick.Controls 1.4
