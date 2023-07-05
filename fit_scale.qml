@@ -6,7 +6,6 @@ import MuseScore 3.0
 import QtQuick.Window 2.2
 import QtQuick.Layouts 1.1
 
-
 MuseScore
 {
     version: "1.0"
@@ -107,7 +106,7 @@ MuseScore
 				diatonicDuration = 0;
 				tonicDuration = 0;
 				totalDuration = 0;
-				applyToSelectedNotes((note) => {fitCount(note, tc, m)});
+				applyToSelectedNotes(function (note) {fitCount(note, tc, m)});
 
 				var x = {
 					tonalCenter: tc,
@@ -121,7 +120,7 @@ MuseScore
 			}
 		}
 
-		results.sort((x, y) => {
+		results.sort(function (x, y) {
 			var dDiff = y.diatonic - x.diatonic;
 			var eps = 0.001;
 			if (Math.abs(dDiff) < eps) return y.tonic - x.tonic;
@@ -129,9 +128,9 @@ MuseScore
 		})
 
 		resultsModel.clear();
-		for (x of results)
+		for (var i = 0; i < results.length; ++i)
 		{
-			resultsModel.append(x);
+			resultsModel.append(results[i]);
 		}
 	}
 
@@ -191,13 +190,13 @@ MuseScore
 		Button
 		{
 			text: "Highlight Chromatic Notes"
-			onClicked: applyToSelectedNotes((note) => { colorNote(note, false); })
+			onClicked: applyToSelectedNotes(function (note) { colorNote(note, false); })
 		}
 
 		Button
 		{
 			text: "Remove Highlight"
-			onClicked: applyToSelectedNotes((note) => { colorNote(note, true); })
+			onClicked: applyToSelectedNotes(function (note) { colorNote(note, true); })
 		}
 
 		Button
