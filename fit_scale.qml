@@ -131,8 +131,8 @@ MuseScore
 					mode: m,
 					tcName: toneNames[tc],
 					mName: modeNames[m],
-					diatonic: (diatonicDuration / totalDuration * 100) + "%",
-					tonic: (tonicDuration / totalDuration * 100) + "%"
+					diatonic: diatonicDuration / totalDuration * 100,
+					tonic: tonicDuration / totalDuration * 100
 				};
 				results.push(x);
 			}
